@@ -20,6 +20,7 @@ const graph = new Graph({
 var currentURL;
 var rootPath;
 var domain;
+//const uselessWords = ["the", "it", "an", "a", "for", "of"];
 //FIXME domain appends another slash, see errors.txt
 
 async function addIfNew(linkArray) {
@@ -51,10 +52,6 @@ async function addElement(element) {
   if (currentURL != element) {
     graph.addDirectedEdge(currentURL, element);
   }
-}
-
-async function getlinks() {
-  return;
 }
 
 async function checkImport() {
@@ -94,7 +91,9 @@ export default async function initializeGraph(inputURL) {
     //FIXME make helper method for getting data
     await got(currentURL)
       .then((response) => {
-        generateLinks(response);
+        const $ = cheerio.load(response.rawBody, null, true);
+        generateLinks($);
+        generateKeywords($, currentURL);
       })
       .catch((err) => {
         writeError(err);
@@ -104,8 +103,32 @@ export default async function initializeGraph(inputURL) {
   writeToFile();
 }
 
-function generateLinks(response) {
-  const $ = cheerio.load(response.rawBody, null, true);
+function generateKeywords($, currentURL) {
+  var keywordsList = {};
+  const textObjects = $("html");
+  const pageText = [];
+  //FIXME see if I can do all text
+  textObjects.each((index, element) => {
+    const paragraphText = $(element).text().split(" ");
+    paragraphText.forEach((element) => {
+      pageText.push(element.replace(/[^a-zA-Z0-9]/g, ""));
+    });
+  });
+  //console.log(pageText);
+  pageText.forEach((element) => {
+    if (keywordsList.hasOwnProperty(element)) {
+      keywordsList[element]++;
+    } else {
+      keywordsList[element] = 1;
+    }
+  });
+  //console.log(keywordsList);
+  //paragraphText.forEach(element);
+  graph.setNodeAttribute(currentURL, "keywords", keywordsList);
+}
+
+function generateLinks($) {
+  //FIXME add for listitems
   const linkObjects = $("a");
   const links = [];
   linkObjects.each((index, element) => {
