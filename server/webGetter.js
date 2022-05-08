@@ -58,6 +58,13 @@ async function getlinks() {
 }
 
 export default async function initializeGraph(inputURL) {
+  const content = fs.readFileSync("graphdata.json");
+  if (content.includes("options")) {
+    console.log("importing from file");
+    graph.import(JSON.parse(content));
+    console.log(graph.inspect());
+    return;
+  }
   //TODO read in starting url and exclude patters from JSON
   //FIXME validation for rootURL
   //FIXME add getting keywords from page
@@ -99,10 +106,10 @@ export default async function initializeGraph(inputURL) {
         );
       });
   }
-  graph.inspect();
+  console.log(graph.inspect());
   fs.writeFile(
     "graphdata.json",
-    JSON.stringify(graph.toJSON()),
+    JSON.stringify(graph.export()),
     function (err) {
       if (err) return console.log(err);
       console.log("Succesfully wrote graph to file");

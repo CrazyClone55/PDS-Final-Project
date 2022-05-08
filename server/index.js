@@ -3,6 +3,7 @@ import path from "path";
 import execute from "./webGetter.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import initializeGraph from "./webGetter.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,7 +25,7 @@ app.get("*", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
-  execute("https://www.rodsbooks.com/refind/");
+  initializeGraph("https://www.rodsbooks.com/refind/");
 });
 
 app.get("/api/loadwebsite", (req, res) => {
