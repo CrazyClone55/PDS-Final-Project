@@ -57,12 +57,24 @@ async function getlinks() {
   return;
 }
 
-export default async function initializeGraph(inputURL) {
+async function checkImport() {
   const content = fs.readFileSync("graphdata.json");
   if (content.includes("options")) {
-    console.log("importing from file");
-    graph.import(JSON.parse(content));
-    console.log(graph.inspect());
+    return true;
+  } else {
+    return false;
+  }
+}
+
+async function importGraph() {
+  console.log("importing Graph");
+  graph.import(JSON.parse(fs.readFileSync("graphdata.json")));
+  console.log(graph.inspect());
+}
+
+export default async function initializeGraph(inputURL) {
+  if (await checkImport()) {
+    await importGraph();
     return;
   }
   //TODO read in starting url and exclude patters from JSON
@@ -82,37 +94,47 @@ export default async function initializeGraph(inputURL) {
     //FIXME make helper method for getting data
     await got(currentURL)
       .then((response) => {
-        console.log("got response");
-        // DEV console.log(response);
-        const $ = cheerio.load(response.rawBody, null, true);
-        const linkObjects = $("a");
-        const links = [];
-        linkObjects.each((index, element) => {
-          links.push($(element).attr("href"));
-        });
-        addIfNew(links);
-        seenUrls.add(currentURL);
-        console.log(queue.length);
+        generateLinks(response);
       })
       .catch((err) => {
-        console.log(err);
-        fs.appendFile(
-          "errors.txt",
-          currentURL + ":  " + err.toString() + `\n`,
-          function (err) {
-            if (err) return console.log(err);
-            console.log("Succesfully wrote error to file");
-          }
-        );
+        writeError(err);
       });
   }
   console.log(graph.inspect());
+  writeToFile();
+}
+
+function generateLinks(response) {
+  const $ = cheerio.load(response.rawBody, null, true);
+  const linkObjects = $("a");
+  const links = [];
+  linkObjects.each((index, element) => {
+    links.push($(element).attr("href"));
+  });
+  addIfNew(links);
+  seenUrls.add(currentURL);
+  console.log(queue.length);
+}
+
+function writeToFile() {
   fs.writeFile(
     "graphdata.json",
     JSON.stringify(graph.export()),
     function (err) {
       if (err) return console.log(err);
-      console.log("Succesfully wrote graph to file");
+      console.log("Successfully wrote to file");
+    }
+  );
+}
+
+function writeError(err) {
+  console.log(err);
+  fs.appendFile(
+    "errors.txt",
+    currentURL + ":  " + err.toString() + `\n`,
+    function (err) {
+      if (err) return console.log(err);
+      console.log("Succesfully wrote error to file");
     }
   );
 }
