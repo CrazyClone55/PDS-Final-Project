@@ -1,5 +1,11 @@
-const express = require("express");
-const path = require("path");
+import express from "express";
+import path from "path";
+import execute from "./webGetter.js";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const PORT = process.env.PORT || 3001;
 
@@ -18,4 +24,11 @@ app.get("*", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
+  execute("https://www.rodsbooks.com/refind/");
+});
+
+app.get("/api/loadwebsite", (req, res) => {
+  //FIXME parse req into a valid url
+  execute(req);
+  console.log("test");
 });
