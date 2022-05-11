@@ -69,7 +69,7 @@ async function importGraph() {
   console.log(graph.inspect());
 }
 
-export default async function initializeGraph(inputURL) {
+export async function initializeGraph(inputURL) {
   if (await checkImport()) {
     await importGraph();
     return;

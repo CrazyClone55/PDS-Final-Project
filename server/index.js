@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import execute from "./webGetter.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { initializeGraph } from "./webGetter.js";
