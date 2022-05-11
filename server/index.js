@@ -3,7 +3,7 @@ import path from "path";
 import execute from "./webGetter.js";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import initializeGraph from "./webGetter.js";
+import { initializeGraph } from "./webGetter.js";
 import { exit } from "process";
 
 const __filename = fileURLToPath(import.meta.url);
