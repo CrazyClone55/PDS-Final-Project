@@ -1,8 +1,7 @@
+//FIXME analyse similar pages
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
-const HashMap = require("hashmap");
-const pretty = require("pretty");
 import Graph from "graphology";
 const fs = require("fs");
 import * as cheerio from "cheerio";
@@ -17,10 +16,11 @@ const graph = new Graph({
   allowSelfLoops: false,
   type: "directed",
 });
+
 var currentURL;
 var rootPath;
 var domain;
-//const uselessWords = ["the", "it", "an", "a", "for", "of"];
+
 //FIXME domain appends another slash, see errors.txt
 
 async function addIfNew(linkArray) {
@@ -34,6 +34,9 @@ async function addIfNew(linkArray) {
       element = domain.concat(element);
     } else if (!element.startsWith("http")) {
       element = domain + rootPath + element;
+    }
+    if (element.indexOf("#") != -1) {
+      element = element.slice(0, element.indexOf("#"));
     }
     if (element.startsWith(domain + rootPath)) {
       if (!(seenUrls.has(element) || queue.includes(element))) {
@@ -66,7 +69,7 @@ async function checkImport() {
 async function importGraph() {
   console.log("importing Graph");
   graph.import(JSON.parse(fs.readFileSync("graphdata.json")));
-  console.log(graph.inspect());
+  //console.log(graph.inspect());
 }
 
 export async function initializeGraph(inputURL) {
@@ -100,21 +103,20 @@ export async function initializeGraph(inputURL) {
       });
   }
   console.log(graph.inspect());
-  writeToFile();
+  await writeToFile();
+  return;
 }
 
 function generateKeywords($, currentURL) {
   var keywordsList = {};
   const textObjects = $("html");
   const pageText = [];
-  //FIXME see if I can do all text
   textObjects.each((index, element) => {
-    const paragraphText = $(element).text().split(" ");
+    const paragraphText = $(element).text().toLowerCase().split(" ");
     paragraphText.forEach((element) => {
       pageText.push(element.replace(/[^a-zA-Z0-9]/g, ""));
     });
   });
-  //console.log(pageText);
   pageText.forEach((element) => {
     if (keywordsList.hasOwnProperty(element)) {
       keywordsList[element]++;
@@ -122,8 +124,6 @@ function generateKeywords($, currentURL) {
       keywordsList[element] = 1;
     }
   });
-  //console.log(keywordsList);
-  //paragraphText.forEach(element);
   graph.setNodeAttribute(currentURL, "keywords", keywordsList);
 }
 
@@ -139,7 +139,8 @@ function generateLinks($) {
   console.log(queue.length);
 }
 
-function writeToFile() {
+async function writeToFile() {
+  console.log("writing to file");
   fs.writeFile(
     "graphdata.json",
     JSON.stringify(graph.export()),

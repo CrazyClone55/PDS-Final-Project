@@ -3,7 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 import { initializeGraph } from "./webGetter.js";
-import { exit } from "process";
+import { searchGraph } from "./searcher.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,9 +25,12 @@ app.get("*", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
-  initializeGraph("https://www.rodsbooks.com/refind/");
+  initializeGraph("https://www.rodsbooks.com/refind/"); //;.then(function () {
+  //   console.log(searchGraph("uninstall"));
+  // });
+  console.log(searchGraph("install"));
 });
-
+//FIXME mmove graph variable into index
 app.get("/api/loadwebsite", (req, res) => {
   //FIXME parse req into a valid url
   execute(req);
