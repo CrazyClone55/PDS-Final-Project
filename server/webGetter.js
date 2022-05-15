@@ -1,8 +1,7 @@
 //FIXME analyse similar pages
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-
-import Graph from "graphology";
+import { webGraph } from "./index.js";
 const fs = require("fs");
 import * as cheerio from "cheerio";
 import got, { ParseError, parseLinkHeader } from "got";
@@ -11,11 +10,6 @@ const parseURL = require("url-parse");
 //TODO Tracker array {url: status}
 var seenUrls = new Set();
 var queue = [];
-const graph = new Graph({
-  multi: true,
-  allowSelfLoops: false,
-  type: "directed",
-});
 
 var currentURL;
 var rootPath;
@@ -51,46 +45,23 @@ async function addIfNew(linkArray) {
 
 async function addElement(element) {
   queue.push(element);
-  graph.mergeNode(element);
+  webGraph.mergeNode(element);
   if (currentURL != element) {
-    graph.addDirectedEdge(currentURL, element);
+    webGraph.addDirectedEdge(currentURL, element);
   }
-}
-
-async function checkImport() {
-  const content = fs.readFileSync("graphdata.json");
-  if (content.includes("options")) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-async function importGraph() {
-  console.log("importing Graph");
-  graph.import(JSON.parse(fs.readFileSync("graphdata.json")));
-  //console.log(graph.inspect());
 }
 
 export async function initializeGraph(inputURL) {
-  if (await checkImport()) {
-    await importGraph();
-    return;
-  }
-  //TODO read in starting url and exclude patters from JSON
-  //FIXME validation for rootURL
-  //FIXME add getting keywords from page
   var rootURL = inputURL;
   var parsedURL = parseURL(rootURL);
   domain = parsedURL.protocol + "//" + parsedURL.host;
   rootPath = parsedURL.pathname;
-  console.log(rootPath);
   queue.push(rootURL);
 
   while (queue.length > 0) {
     currentURL = queue.shift();
     console.log(`starting analysis of ${currentURL}`);
-    graph.mergeNode(currentURL);
+    webGraph.mergeNode(currentURL);
     //FIXME make helper method for getting data
     await got(currentURL)
       .then((response) => {
@@ -102,7 +73,7 @@ export async function initializeGraph(inputURL) {
         writeError(err);
       });
   }
-  console.log(graph.inspect());
+  console.log(webGraph.inspect());
   await writeToFile();
   return;
 }
@@ -124,7 +95,7 @@ function generateKeywords($, currentURL) {
       keywordsList[element] = 1;
     }
   });
-  graph.setNodeAttribute(currentURL, "keywords", keywordsList);
+  webGraph.setNodeAttribute(currentURL, "keywords", keywordsList);
 }
 
 function generateLinks($) {
@@ -143,7 +114,7 @@ async function writeToFile() {
   console.log("writing to file");
   fs.writeFile(
     "graphdata.json",
-    JSON.stringify(graph.export()),
+    JSON.stringify(webGraph.export()),
     function (err) {
       if (err) return console.log(err);
       console.log("Successfully wrote to file");
