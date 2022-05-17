@@ -5,13 +5,53 @@ import { Button, Alert, Fade } from "@mui/material";
 import axios from "axios";
 
 function App() {
+  /**
+   * It takes a list as an argument and returns a list item for each item in the list
+   * @param list - The array of items to be rendered.
+   * @returns A list of items
+   */
+  const ListRender = () => {
+    return (
+      <ol>
+        {listData.map((listItem) => (
+          <li key={listItem[0]}>
+            {listItem[0]}, {listItem[1]}
+          </li>
+        ))}
+      </ol>
+    );
+  };
+
   /* Creating a state for each of the variables. */
   const [urlInput, setURL] = useState("");
   const [state, setState] = useState("");
   const [infoVisibility, setInfoVis] = useState(false);
   const [searchVis, setSearchVis] = useState(false);
   const [alertState, setAlertState] = useState("info");
-  const [searchValue, setSearchValue] = useState("");
+  const [searchPhrase, setSearchPhrase] = useState("");
+  const [listState, setListState] = useState(false);
+  const [listData, setListData] = useState([1, 2]);
+  /**
+   * The function takes the search phrase from the input field and sends it to the server
+   */
+  function search() {
+    const phraseData = {
+      phrase: searchPhrase,
+    };
+    axios
+      .post("http://localhost:3001/search", phraseData)
+      .then((res) => {
+        onGetSearchData(res.data.data);
+      })
+      .catch((err) => {
+        alert(err);
+      });
+  }
+
+  function onGetSearchData(result) {
+    setListData(result);
+    setListState(true);
+  }
 
   /**
    * `onWaitingForResponse()` is called when the user clicks the "Send" button. It sets the alert state
@@ -39,7 +79,7 @@ function App() {
   /**
    * The function takes the urlInput from the user and sends it to the backend
    */
-  function onSubmit() {
+  function onSubmitUrl() {
     const urlData = {
       url: urlInput,
     };
@@ -55,7 +95,7 @@ function App() {
   return (
     <div className="main">
       <h1>React Search</h1>
-      <div className="search">
+      <div className="urlInput">
         <TextField
           id="outlined-basic"
           variant="outlined"
@@ -65,11 +105,11 @@ function App() {
           value={urlInput}
         />
       </div>
-      <div className="searchButton">
+      <div className="urlButton">
         <Button
           variant="contained"
           onClick={() => {
-            onSubmit();
+            onSubmitUrl();
             onWaitingForResponse();
           }}
         >
@@ -88,10 +128,25 @@ function App() {
             variant="outlined"
             fullWidth
             label="search"
-            onChange={(e) => setSearchValue(e.target.value)}
-            value={searchValue}
+            onChange={(e) => setSearchPhrase(e.target.value)}
+            value={searchPhrase}
           ></TextField>
         </Fade>
+      </div>
+      <div className="searchButton">
+        <Fade in={searchVis}>
+          <Button
+            variant="contained"
+            onClick={() => {
+              search();
+            }}
+          >
+            Submit
+          </Button>
+        </Fade>
+      </div>
+      <div className="searchResults">
+        {listState && <ListRender></ListRender>}
       </div>
     </div>
   );

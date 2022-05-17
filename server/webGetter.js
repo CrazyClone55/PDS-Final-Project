@@ -73,9 +73,9 @@ async function addElement(element) {
  * @returns a promise.
  */
 export async function initializeGraph(inputURL) {
-  /* Clearing the queue and the set of seen urls. */
   queue = [];
   seenUrls = new Set();
+  webGraph.clear();
 
   /* Taking the input URL and parsing it into its domain and root path. Then it adds the root URL to the
    queue. */

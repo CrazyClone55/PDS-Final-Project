@@ -44,7 +44,8 @@ export async function searchGraph(inputPhrase) {
       }
     });
   });
-  return matchHits;
+  const matches = Object.entries(matchHits).sort((a, b) => b[1] - a[1]);
+  return matches;
 }
 
 /**

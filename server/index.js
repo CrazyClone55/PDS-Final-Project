@@ -58,9 +58,13 @@ app.get("/api", (req, res) => {
   res.json({ message: "hello from server!" });
 });
 
-app.get("/graph", (req, res) => {
-  console.log("sent graph");
-  res.json({ message: JSON.stringify(webGraph.export()) });
+/* This is a route that accepts a post request from the frontend. It then calls the searchGraph
+function with the phrase that was sent in the request. It then sends the searchData back to the
+frontend. */
+app.post("/search", async (req, res) => {
+  const searchData = await searchGraph(req.body.phrase);
+  console.log(searchData);
+  res.json({ data: searchData });
 });
 
 /* main api call, accepts url from frontend and loads the graph */
@@ -84,6 +88,8 @@ app.get("*", (req, res) => {
 /* This is the main function that starts the server. */
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
+  importGraph();
+  console.log(searchGraph("boot"));
   //importGraph();
   //initializeGraph("https://www.rodsbooks.com/refind/"); //;.then(function () {
   //   console.log(searchGraph("uninstall"));
