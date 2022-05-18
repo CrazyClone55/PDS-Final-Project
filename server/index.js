@@ -43,27 +43,16 @@ async function checkImport() {
 /* This is setting up the server. */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-//const PORT = process.env.PORT || 3001;
 const PORT = 3001;
 const app = express();
 app.use(express.json());
 app.use(cors());
-//app.use(cors({ origin: true, credentials: true }));
-//app.use(express.static(path.resolve(__dirname, "../client/build")));
-
-/* This is a test route to delete later */
-//FIXME delete /api
-app.get("/api", (req, res) => {
-  console.log(`sent message`);
-  res.json({ message: "hello from server!" });
-});
 
 /* This is a route that accepts a post request from the frontend. It then calls the searchGraph
 function with the phrase that was sent in the request. It then sends the searchData back to the
 frontend. */
 app.post("/search", async (req, res) => {
   const searchData = await searchGraph(req.body.phrase);
-  console.log(searchData);
   res.json({ data: searchData });
 });
 
@@ -88,11 +77,4 @@ app.get("*", (req, res) => {
 /* This is the main function that starts the server. */
 app.listen(PORT, () => {
   console.log(`Server listening on ${PORT}`);
-  importGraph();
-  console.log(searchGraph("boot"));
-  //importGraph();
-  //initializeGraph("https://www.rodsbooks.com/refind/"); //;.then(function () {
-  //   console.log(searchGraph("uninstall"));
-  // });
-  //console.log(searchGraph("install"));
 });
