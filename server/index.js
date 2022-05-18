@@ -43,7 +43,7 @@ async function checkImport() {
 /* This is setting up the server. */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 const app = express();
 app.use(express.json());
 app.use(cors());
