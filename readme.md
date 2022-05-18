@@ -40,6 +40,10 @@ git clone https://github.com/CrazyClone55/PDS-Final-Project.git
 cd PDS-Final-Project
 
 npm install
+
+cd client
+
+npm install
 ```
 
 ## 🎈 Usage <a name="usage"></a>
